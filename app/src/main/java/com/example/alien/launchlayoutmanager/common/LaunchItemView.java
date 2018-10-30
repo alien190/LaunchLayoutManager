@@ -20,6 +20,15 @@ import com.example.alien.launchlayoutmanager.R;
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
 
+import java.util.concurrent.TimeUnit;
+
+import io.reactivex.Observable;
+import io.reactivex.Observer;
+import io.reactivex.Single;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.functions.Consumer;
+import io.reactivex.schedulers.Schedulers;
 import timber.log.Timber;
 
 public class LaunchItemView extends CardView {
@@ -38,6 +47,7 @@ public class LaunchItemView extends CardView {
     private int mTitleHeightWithMargins;
     private int mTopAndBottomMargins;
     private int mIconHeight;
+    private boolean mDoRequestLayout;
 
     public LaunchItemView(Context context) {
         this(context, null);
@@ -54,6 +64,7 @@ public class LaunchItemView extends CardView {
     }
 
     private void init(Context context, AttributeSet attrs) {
+        mDoRequestLayout = true;
         mView = inflate(context, R.layout.launch_item_view, this);
         mClRoot = mView.findViewById(R.id.cl_root);
         mClTitle = mView.findViewById(R.id.cl_title);
@@ -114,9 +125,10 @@ public class LaunchItemView extends CardView {
 
 
         value -= 2 * mTopAndBottomMargins;
-        Drawable drawable = mIvMissionIcon.getDrawable();
-        Rect bounds = drawable.getBounds();
-        int height = Math.max(bounds.height(), bounds.width());
+        //Drawable drawable = mIvMissionIcon.getDrawable();
+        //Rect bounds = drawable.getBounds();
+        //int height = Math.max(bounds.height(), bounds.width());
+        int height = mIvMissionIcon.getHeight();
         float scale = (float) (value) / height;
         mIvMissionIcon.setPivotX(0f);
         mIvMissionIcon.setPivotY(0f);
@@ -124,12 +136,8 @@ public class LaunchItemView extends CardView {
         mIvMissionIcon.setScaleY(scale);
         mIconHeight = value;
 
-        //requestLayout();
 
-        // forceLayout();
-        //  mIvMissionIcon.forceLayout();
-        //mIvMissionIcon.setRight(value);
-        //mIvMissionIcon.setBottom(value);
+        // }
     }
 
     private void setViewSize(View view, int height, int width) {
@@ -180,11 +188,13 @@ public class LaunchItemView extends CardView {
                     @Override
                     public void onSuccess() {
                         updateContentSize(mIconHeight);
+                        onRequestLayout();
                     }
 
                     @Override
                     public void onError(Exception e) {
                         updateContentSize(mIconHeight);
+                        onRequestLayout();
                     }
                 });
     }
@@ -218,5 +228,55 @@ public class LaunchItemView extends CardView {
 
     public LinearLayout getClTitle() {
         return mClTitle;
+    }
+
+    @Override
+    protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
+        super.onLayout(changed, left, top, right, bottom);
+    }
+
+    public void onRequestLayout() {
+        // if (mDoRequestLayout) {
+        if (!mTvMissionName.isInLayout()) {
+            mIvMissionIcon.requestLayout();
+        }
+         if (!mClTitle.isInLayout()) {
+        mClTitle.requestLayout();
+        }
+
+        // if (!mTvMissionName.isInLayout()) {
+        //mTvMissionName.requestLayout();
+        //Timber.d("onRequestLayout: mTvMissionName");
+        //}
+        Observable.interval(100, TimeUnit.MILLISECONDS)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Observer<Long>() {
+                    Disposable mDisposable;
+
+                    @Override
+                    public void onSubscribe(Disposable d) {
+                        mDisposable = d;
+                    }
+
+                    @Override
+                    public void onNext(Long aLong) {
+                        if (!mTvMissionName.isInLayout()) {
+                            mTvMissionName.requestLayout();
+                            Timber.d("onRequestLayout: mTvMissionName");
+                            mDisposable.dispose();
+                        }
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+
+                    }
+
+                    @Override
+                    public void onComplete() {
+
+                    }
+                });
     }
 }

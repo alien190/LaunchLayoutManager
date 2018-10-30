@@ -61,8 +61,14 @@ public class LaunchAdapter extends RecyclerView.Adapter<LaunchViewHolder> {
 
     public void addLaunch(DomainLaunch launch) {
         mLaunches.add(launch);
-        //notifyItemInserted(mLaunches.size() - 1);
-        notifyDataSetChanged();
+        notifyItemInserted(mLaunches.size() - 1);
+        // notifyDataSetChanged();
+    }
+
+    public void insertLaunch(DomainLaunch launch) {
+        mLaunches.add(0, launch);
+        notifyItemInserted(0);
+        // notifyDataSetChanged();
     }
 
     public interface OnItemClickListener {
