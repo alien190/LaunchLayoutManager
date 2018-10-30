@@ -101,7 +101,7 @@ public class LaunchLayoutManager extends RecyclerView.LayoutManager {
 
     private void getViewHeightByTopValue(int topValue, ViewHeight viewHeight) {
         if (viewHeight != null) {
-            topValue -= mTopAndBottomMargins;
+            //topValue -= mTopAndBottomMargins;
             if (topValue > mBigViewHeight) {
                 topValue = mBigViewHeight;
             } else if (topValue < 0) {

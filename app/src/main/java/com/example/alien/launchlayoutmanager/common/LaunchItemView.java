@@ -2,6 +2,7 @@ package com.example.alien.launchlayoutmanager.common;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.Canvas;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.support.annotation.Nullable;
@@ -230,53 +231,57 @@ public class LaunchItemView extends CardView {
         return mClTitle;
     }
 
+
     @Override
-    protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
-        super.onLayout(changed, left, top, right, bottom);
+    protected void onDraw(Canvas canvas) {
+        Timber.d("onDraw");
+        mIvMissionIcon.requestLayout();
+        mTvMissionName.requestLayout();
+        super.onDraw(canvas);
     }
 
     public void onRequestLayout() {
         // if (mDoRequestLayout) {
-        if (!mTvMissionName.isInLayout()) {
-            mIvMissionIcon.requestLayout();
-        }
-         if (!mClTitle.isInLayout()) {
-        mClTitle.requestLayout();
-        }
+//        if (!mTvMissionName.isInLayout()) {
+//            mIvMissionIcon.requestLayout();
+//        }
+//         if (!mClTitle.isInLayout()) {
+//        mClTitle.requestLayout();
+//        }
 
         // if (!mTvMissionName.isInLayout()) {
         //mTvMissionName.requestLayout();
         //Timber.d("onRequestLayout: mTvMissionName");
         //}
-        Observable.interval(100, TimeUnit.MILLISECONDS)
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Observer<Long>() {
-                    Disposable mDisposable;
-
-                    @Override
-                    public void onSubscribe(Disposable d) {
-                        mDisposable = d;
-                    }
-
-                    @Override
-                    public void onNext(Long aLong) {
-                        if (!mTvMissionName.isInLayout()) {
-                            mTvMissionName.requestLayout();
-                            Timber.d("onRequestLayout: mTvMissionName");
-                            mDisposable.dispose();
-                        }
-                    }
-
-                    @Override
-                    public void onError(Throwable e) {
-
-                    }
-
-                    @Override
-                    public void onComplete() {
-
-                    }
-                });
+//        Observable.interval(100, TimeUnit.MILLISECONDS)
+//                .subscribeOn(Schedulers.io())
+//                .observeOn(AndroidSchedulers.mainThread())
+//                .subscribe(new Observer<Long>() {
+//                    Disposable mDisposable;
+//
+//                    @Override
+//                    public void onSubscribe(Disposable d) {
+//                        mDisposable = d;
+//                    }
+//
+//                    @Override
+//                    public void onNext(Long aLong) {
+//                        if (!mTvMissionName.isInLayout()) {
+//                            mTvMissionName.requestLayout();
+//                            Timber.d("onRequestLayout: mTvMissionName");
+//                            mDisposable.dispose();
+//                        }
+//                    }
+//
+//                    @Override
+//                    public void onError(Throwable e) {
+//
+//                    }
+//
+//                    @Override
+//                    public void onComplete() {
+//
+//                    }
+//                });
     }
 }
