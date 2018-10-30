@@ -87,10 +87,9 @@ public class LaunchLayoutManager extends RecyclerView.LayoutManager {
             mFirstVisibleViewTopValue = mBigViewHeight * mFirstVisibleViewPosition - mOffset;
             int firstVisibleViewBottomValue = mFirstVisibleViewTopValue + mBigViewHeight;
             emptyHeight -= firstVisibleViewBottomValue;
-            ViewHeight secondVisibleViewHeight = new ViewHeight();
-            getViewHeightByTopValue(firstVisibleViewBottomValue, secondVisibleViewHeight);
-            if (emptyHeight - secondVisibleViewHeight.getHeight() >= 0) {
-                emptyHeight -= secondVisibleViewHeight.getHeight();
+            int secondVisibleViewHeight = getViewHeightByTopValue(firstVisibleViewBottomValue);
+            if (emptyHeight - secondVisibleViewHeight >= 0) {
+                emptyHeight -= secondVisibleViewHeight;
                 mLastVisibleViewPosition++;
                 int smallViewPosCount = emptyHeight / mSmallViewHeight;
                 mLastVisibleViewPosition += smallViewPosCount;
@@ -107,19 +106,18 @@ public class LaunchLayoutManager extends RecyclerView.LayoutManager {
         }
     }
 
-    private void getViewHeightByTopValue(int topValue, ViewHeight viewHeight) {
-        if (viewHeight != null) {
-            topValue -= mTopAndBottomMargins;
-            if (topValue > mBigViewHeight) {
-                topValue = mBigViewHeight;
-            } else if (topValue < 0) {
-                topValue = 0;
-            }
-            viewHeight.setScale(1 - (float) (topValue) / (mBigViewHeight));
-            viewHeight.setHeight((int) (mSmallViewHeight + viewHeight.getScale() * (mBigViewHeight - mSmallViewHeight)));
-            Timber.d("getViewHeightByTopValue topValue:%d, scale:%f, height:%d",
-                    topValue, viewHeight.getScale(), viewHeight.getHeight());
+    private int getViewHeightByTopValue(int topValue) {
+        topValue -= mTopAndBottomMargins;
+        if (topValue > mBigViewHeight) {
+            topValue = mBigViewHeight;
+        } else if (topValue < 0) {
+            topValue = 0;
         }
+        float scale = 1 - (float) topValue / mBigViewHeight;
+        int height = (int) (mSmallViewHeight + scale * (mBigViewHeight - mSmallViewHeight));
+        Timber.d("getViewHeightByTopValue topValue:%d, scale:%f, height:%d",
+                topValue, scale, height);
+        return height;
     }
 
     private void initConstants(RecyclerView.Recycler recycler) {
@@ -163,7 +161,7 @@ public class LaunchLayoutManager extends RecyclerView.LayoutManager {
         boolean isViewFromCache;
         int topValue = mFirstVisibleViewTopValue;
         int bottomValue;
-        ViewHeight viewHeight = new ViewHeight();
+        int viewHeight;
         try {
             for (int curPos = mFirstVisibleViewPosition; curPos <= mLastVisibleViewPosition; curPos++) {
                 isViewFromCache = true;
@@ -174,10 +172,10 @@ public class LaunchLayoutManager extends RecyclerView.LayoutManager {
                 } else {
                     mViewCache.remove(curPos);
                 }
-                getViewHeightByTopValue(topValue, viewHeight);
-                bottomValue = topValue + viewHeight.getHeight();
+                viewHeight = getViewHeightByTopValue(topValue);
+                bottomValue = topValue + viewHeight;
                 if (view instanceof LaunchItemView) {
-                    ((LaunchItemView) view).updateContentSize(viewHeight.getHeight());
+                    ((LaunchItemView) view).updateContentSize(viewHeight);
                 }
                 if (isViewFromCache) {
                     if (view.getTop() != topValue) {
@@ -188,13 +186,11 @@ public class LaunchLayoutManager extends RecyclerView.LayoutManager {
                     }
                     attachView(view);
                 } else {
-                    drawView(view, topValue, bottomValue);
+                    layoutView(view, topValue, bottomValue);
                 }
                 topValue = bottomValue;
                 if (view instanceof LaunchItemView) {
                     ((LaunchItemView) view).onRequestLayout();
-                    //view.requestLayout();
-                    //   ((LaunchItemView) view).getClRoot().requestLayout();
                 }
             }
         } catch (Throwable throwable) {
@@ -222,25 +218,8 @@ public class LaunchLayoutManager extends RecyclerView.LayoutManager {
         requestLayout();
     }
 
-    private int drawAnchorView(View anchorView, RecyclerView.Recycler recycler) {
-        int pos = 0;
-        int top = 0;
-        if (anchorView != null) {
-            anchorView = recycler.getViewForPosition(pos);
-            if (anchorView instanceof LaunchItemView) {
-                ((LaunchItemView) anchorView).setScale(LaunchItemView.MAX_SCALE);
-            }
-            //top = drawView(anchorView, top, -1);
-        } else {
-            attachView(anchorView);
-            mViewCache.remove(pos);
-            top = getDecoratedBottom(anchorView);
-        }
-        return top;
-    }
 
-
-    private void drawView(View view, int top, int bottom) {
+    private void layoutView(View view, int top, int bottom) {
         addView(view);
         measureChildWithMargins(view, 0, 0);
         int decoratedMeasuredWidth = getDecoratedMeasuredWidth(view);
@@ -254,19 +233,6 @@ public class LaunchLayoutManager extends RecyclerView.LayoutManager {
     }
 
 
-    private int getAnchorPos() {
-        int childCount = getChildCount();
-        int top;
-        for (int i = 0; i < childCount; i++) {
-            View view = getChildAt(i);
-            RecyclerView.LayoutParams layoutParams = (RecyclerView.LayoutParams) view.getLayoutParams();
-            top = getDecoratedTop(view) - layoutParams.topMargin;
-            if (top > 0) {
-                return i;
-            }
-        }
-        return 0;
-    }
 
     @Override
     public int scrollVerticallyBy(int dy, RecyclerView.Recycler recycler, RecyclerView.State state) {
@@ -297,38 +263,9 @@ public class LaunchLayoutManager extends RecyclerView.LayoutManager {
         return getDecoratedMeasuredHeight(view) + getTopAndBottomMargins(view);
     }
 
-    int getTopAndBottomMargins(View view) {
+    private int getTopAndBottomMargins(View view) {
         RecyclerView.LayoutParams layoutParams = (RecyclerView.LayoutParams) view.getLayoutParams();
         return layoutParams.bottomMargin + layoutParams.topMargin;
-    }
-
-    private class ViewHeight {
-        private int mHeight;
-        private float mScale;
-
-        public ViewHeight() {
-        }
-
-        public ViewHeight(int height, float scale) {
-            mHeight = height;
-            mScale = scale;
-        }
-
-        public int getHeight() {
-            return mHeight;
-        }
-
-        public void setHeight(int height) {
-            mHeight = height;
-        }
-
-        public float getScale() {
-            return mScale;
-        }
-
-        public void setScale(float scale) {
-            mScale = scale;
-        }
     }
 
 }

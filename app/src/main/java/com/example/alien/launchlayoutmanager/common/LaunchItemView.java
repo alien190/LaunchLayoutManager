@@ -3,8 +3,6 @@ package com.example.alien.launchlayoutmanager.common;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
-import android.graphics.Rect;
-import android.graphics.drawable.Drawable;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.CardView;
 import android.util.AttributeSet;
@@ -16,20 +14,10 @@ import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
-
 import com.example.alien.launchlayoutmanager.R;
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
 
-import java.util.concurrent.TimeUnit;
-
-import io.reactivex.Observable;
-import io.reactivex.Observer;
-import io.reactivex.Single;
-import io.reactivex.android.schedulers.AndroidSchedulers;
-import io.reactivex.disposables.Disposable;
-import io.reactivex.functions.Consumer;
-import io.reactivex.schedulers.Schedulers;
 import timber.log.Timber;
 
 public class LaunchItemView extends CardView {
@@ -48,7 +36,6 @@ public class LaunchItemView extends CardView {
     private int mTitleHeightWithMargins;
     private int mTopAndBottomMargins;
     private int mIconHeight;
-    private boolean mDoRequestLayout;
 
     public LaunchItemView(Context context) {
         this(context, null);
@@ -65,7 +52,6 @@ public class LaunchItemView extends CardView {
     }
 
     private void init(Context context, AttributeSet attrs) {
-        mDoRequestLayout = true;
         mView = inflate(context, R.layout.launch_item_view, this);
         mClRoot = mView.findViewById(R.id.cl_root);
         mClTitle = mView.findViewById(R.id.cl_title);
@@ -86,7 +72,6 @@ public class LaunchItemView extends CardView {
         mRootHeight = mClRoot.getMeasuredHeight();
         mRootHeightWithMargins = mRootHeight + rootLayoutParams.topMargin + rootLayoutParams.bottomMargin;
         mTopAndBottomMargins = rootLayoutParams.topMargin + rootLayoutParams.bottomMargin;
-        //mGuideline.setGuidelineBegin(mRootHeightWithMargins + mTopAndBottomMargins);
         mTvMissionName.offsetLeftAndRight(mRootHeightWithMargins + mTopAndBottomMargins);
         mTvMissionName.setRight(mIvMissionIcon.getLeft() + mRootHeightWithMargins);
         mTvMissionName.setBottom(mIvMissionIcon.getTop() + mRootHeightWithMargins);
@@ -115,20 +100,7 @@ public class LaunchItemView extends CardView {
     }
 
     public void updateContentSize(int value) {
-        //    int iconHeight = getBottom() - getTop() - mTopAndBottomMargins;
-        //setViewSize(mIvMissionIcon, height, height);
-        // mIvMissionIcon.setBottom(mIvMissionIcon.getTop() + value);
-        //mIvMissionIcon.setRight(mIvMissionIcon.getLeft() + value);
-        // setViewSize(mIvMissionIcon, value + mTopAndBottomMargins, value +mTopAndBottomMargins);
-//        ViewGroup.LayoutParams layoutParams = mIvMissionIcon.getLayoutParams();
-//        layoutParams.width = ViewGroup.LayoutParams.MATCH_PARENT;
-//        layoutParams.height = ViewGroup.LayoutParams.MATCH_PARENT;
-
-
         value -= 2 * mTopAndBottomMargins;
-        //Drawable drawable = mIvMissionIcon.getDrawable();
-        //Rect bounds = drawable.getBounds();
-        //int height = Math.max(bounds.height(), bounds.width());
         int height = mIvMissionIcon.getHeight();
         float scale = (float) (value) / height;
         mIvMissionIcon.setPivotX(0f);
@@ -136,9 +108,6 @@ public class LaunchItemView extends CardView {
         mIvMissionIcon.setScaleX(scale);
         mIvMissionIcon.setScaleY(scale);
         mIconHeight = value;
-
-
-        // }
     }
 
     private void setViewSize(View view, int height, int width) {
@@ -204,10 +173,6 @@ public class LaunchItemView extends CardView {
         if (mIvMissionIcon != null && bitmap != null) {
             try {
                 mIvMissionIcon.setImageBitmap(bitmap);
-               // onRequestLayout();
-                //invalidate();
-                //requestLayout();
-                //forceLayout();
             } catch (Throwable throwable) {
                 Timber.d(throwable);
             }
@@ -224,13 +189,6 @@ public class LaunchItemView extends CardView {
         return mIvMissionIcon;
     }
 
-    public RelativeLayout getClRoot() {
-        return mClRoot;
-    }
-
-    public LinearLayout getClTitle() {
-        return mClTitle;
-    }
 
     @Override
     protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
@@ -244,17 +202,12 @@ public class LaunchItemView extends CardView {
 
     @Override
     protected void onDraw(Canvas canvas) {
-        //mIvMissionIcon.forceLayout();
-        //       mIvMissionIcon.requestLayout();
         mTvMissionName.requestLayout();
-        //mIvMissionIcon.
-
         Timber.d("onDraw");
         super.onDraw(canvas);
     }
 
     public void onRequestLayout() {
-        // if (mDoRequestLayout) {
         if (!mTvMissionName.isInLayout()) {
             mIvMissionIcon.requestLayout();
             Timber.d("onRequestLayout: mIvMissionIcon");
@@ -267,35 +220,5 @@ public class LaunchItemView extends CardView {
             mTvMissionName.requestLayout();
             Timber.d("onRequestLayout: mTvMissionName");
         }
-//        Observable.interval(100, TimeUnit.MILLISECONDS)
-//                .subscribeOn(Schedulers.io())
-//                .observeOn(AndroidSchedulers.mainThread())
-//                .subscribe(new Observer<Long>() {
-//                    Disposable mDisposable;
-//
-//                    @Override
-//                    public void onSubscribe(Disposable d) {
-//                        mDisposable = d;
-//                    }
-//
-//                    @Override
-//                    public void onNext(Long aLong) {
-//                        if (!mTvMissionName.isInLayout()) {
-//                            mTvMissionName.requestLayout();
-//                            Timber.d("onRequestLayout: mTvMissionName");
-//                            mDisposable.dispose();
-//                        }
-//                    }
-//
-//                    @Override
-//                    public void onError(Throwable e) {
-//
-//                    }
-//
-//                    @Override
-//                    public void onComplete() {
-//
-//                    }
-//                });
     }
 }
