@@ -204,6 +204,7 @@ public class LaunchItemView extends CardView {
         if (mIvMissionIcon != null && bitmap != null) {
             try {
                 mIvMissionIcon.setImageBitmap(bitmap);
+               // onRequestLayout();
                 //invalidate();
                 //requestLayout();
                 //forceLayout();
@@ -231,28 +232,41 @@ public class LaunchItemView extends CardView {
         return mClTitle;
     }
 
+    @Override
+    protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
+        super.onLayout(changed, left, top, right, bottom);
+    }
+
+    @Override
+    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+    }
 
     @Override
     protected void onDraw(Canvas canvas) {
-        Timber.d("onDraw");
-        mIvMissionIcon.requestLayout();
+        //mIvMissionIcon.forceLayout();
+        //       mIvMissionIcon.requestLayout();
         mTvMissionName.requestLayout();
+        //mIvMissionIcon.
+
+        Timber.d("onDraw");
         super.onDraw(canvas);
     }
 
     public void onRequestLayout() {
         // if (mDoRequestLayout) {
-//        if (!mTvMissionName.isInLayout()) {
-//            mIvMissionIcon.requestLayout();
-//        }
-//         if (!mClTitle.isInLayout()) {
-//        mClTitle.requestLayout();
-//        }
+        if (!mTvMissionName.isInLayout()) {
+            mIvMissionIcon.requestLayout();
+            Timber.d("onRequestLayout: mIvMissionIcon");
+        }
+        if (!mClTitle.isInLayout()) {
+            mClTitle.requestLayout();
+        }
 
-        // if (!mTvMissionName.isInLayout()) {
-        //mTvMissionName.requestLayout();
-        //Timber.d("onRequestLayout: mTvMissionName");
-        //}
+        if (!mTvMissionName.isInLayout()) {
+            mTvMissionName.requestLayout();
+            Timber.d("onRequestLayout: mTvMissionName");
+        }
 //        Observable.interval(100, TimeUnit.MILLISECONDS)
 //                .subscribeOn(Schedulers.io())
 //                .observeOn(AndroidSchedulers.mainThread())

@@ -1,7 +1,6 @@
 package com.example.alien.launchlayoutmanager.common;
 
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.support.v7.widget.RecyclerView;
 import android.util.SparseArray;
 import android.view.View;
@@ -59,7 +58,16 @@ public class LaunchLayoutManager extends RecyclerView.LayoutManager {
             initializeCache();
             fillDown(recycler);
             recyclerCache(recycler);
+            childrenRequestLayout(recycler);
         }
+    }
+
+    private void childrenRequestLayout(RecyclerView.Recycler recycler) {
+        for (int i = mFirstVisibleViewPosition; i <= mLastVisibleViewPosition; i++) {
+            View view = recycler.getViewForPosition(i);
+            ((LaunchItemView) view).onRequestLayout();
+        }
+
     }
 
     @Override
@@ -101,7 +109,7 @@ public class LaunchLayoutManager extends RecyclerView.LayoutManager {
 
     private void getViewHeightByTopValue(int topValue, ViewHeight viewHeight) {
         if (viewHeight != null) {
-            //topValue -= mTopAndBottomMargins;
+            topValue -= mTopAndBottomMargins;
             if (topValue > mBigViewHeight) {
                 topValue = mBigViewHeight;
             } else if (topValue < 0) {
@@ -119,6 +127,7 @@ public class LaunchLayoutManager extends RecyclerView.LayoutManager {
         try {
             View view = recycler.getViewForPosition(0);
             mTopAndBottomMargins = getTopAndBottomMargins(view);
+            //mTopAndBottomMargins = 21;
             if (view instanceof LaunchItemView) {
                 LaunchItemView launchItemView = (LaunchItemView) view;
                 mBigViewHeight = launchItemView.getRootHeightWithMargins() + mTopAndBottomMargins;
@@ -210,9 +219,7 @@ public class LaunchLayoutManager extends RecyclerView.LayoutManager {
 
     @Override
     public void onLayoutCompleted(RecyclerView.State state) {
-//        for(int i = mFirstVisibleViewPosition; i< mLastVisibleViewPosition; i++) {
-//            View view = state.
-//        }
+        requestLayout();
     }
 
     private int drawAnchorView(View anchorView, RecyclerView.Recycler recycler) {
@@ -243,7 +250,7 @@ public class LaunchLayoutManager extends RecyclerView.LayoutManager {
                 layoutParams.leftMargin,
                 top + layoutParams.topMargin,
                 decoratedMeasuredWidth + layoutParams.rightMargin,
-                bottom);
+                bottom + layoutParams.bottomMargin);
     }
 
 
